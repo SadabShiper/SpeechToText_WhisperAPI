@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Summarizer App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div id="sidebar">
+        <a href="/">Speech-to-text</a>
+        <a href="/summarize-audio">Summarize Audio</a>
+        <a href="/summarize-yt">Summarize YouTube Video</a>
+        <a href="/summarize-pdf">Summarize PDF file</a>
+    </div>
+
+    <!-- Main content -->
+    <div id="main">
+        <header>
+            <nav>
+                <div class="container">
+                    <h1>PDF Summarizer App</h1>
+                </div>
+            </nav>
+        </header>
+
+        <main class="container">
+            <form id="transcriptionForm" action="/pdf" method="post" enctype="multipart/form-data">
+                <label for="pdf">Select a PDF file:</label>
+                <input type="file" id="pdf" name="pdf" accept=".pdf" required>
+                <br>
+                <input type="text" name="question" id="question" placeholder="Ask a question about the PDF" required>
+                <button type="submit" id="transcribeBtn">Summarize</button>
+            </form>
+        
+            <!-- Feedback Messages -->
+            <div id="feedbackMessage"></div>
+
+            <!-- Result Container -->
+            <div id="transcriptionResult"></div>
+            <div id="loadingIndicator"></div>
+        </main>
+
+        <!-- <footer>
+            <div class="container">
+                <p>&copy; 2024 PDF Summarizer App</p>
+            </div>
+        </footer> -->
+    </div>
+
+    <script>
+        document.getElementById('transcribeBtn').addEventListener('click', function (event) {
+            event.preventDefault();
+
+            var form = document.getElementById('transcriptionForm');
+            var formData = new FormData(form);
+
+            // Show loading indicator
+            document.getElementById('loadingIndicator').style.display = 'block';
+            // Hide result container
+            document.getElementById('transcriptionResult').style.display = 'none';
+
+            // Reset previous feedback messages
+            document.getElementById('feedbackMessage').innerHTML = '';
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'text/plain',  // Specify that you expect plain text response
+                },
+            })
+            .then(response => response.json())
+.then(data => {
+    if (data.answer !== undefined) {
+        const transcriptionText = data.answer.trim();
+
+        // Hide loading indicator
+        document.getElementById('loadingIndicator').style.display = 'none';
+        // Display the transcription result in the 'transcriptionResult' div
+        document.getElementById('transcriptionResult').innerText = transcriptionText;
+        // Show result container
+        document.getElementById('transcriptionResult').style.display = 'block';
+
+        // Reset the question area
+        document.getElementById('question').value = '';
+
+        // Provide feedback message
+        // document.getElementById('feedbackMessage').innerHTML = '<p>PDF Summarized successfully!</p>';
+    } else {
+        // Handle the case where data.answer is undefined
+        console.error('Error: The server response did not contain a valid answer.');
+        document.getElementById('feedbackMessage').innerHTML = '<p>An error occurred during PDF summarization. Please try again.</p>';
+        // Show result container
+        document.getElementById('transcriptionResult').style.display = 'block';
+    }
+})
+
+        });
+    </script>
+</body>
+</html>

@@ -9,10 +9,16 @@
 <body>
     <!-- Sidebar -->
     <div id="sidebar">
-        <a href="/">Speech-to-text</a>
-        <a href="/summarize-audio">Summarize Audio</a>
-        <a href="/summarize-yt">Summarize YouTube Video</a>
-        <a href="/summarize-pdf">Summarize PDF file</a>
+        <div class="sidebar-header">
+            <h1>SummarEase</h1>
+            <p>An AI Synopsis App</p>
+        </div>
+        <div class="sidebar-links">
+        <a href="/" class="nav-link">Speech-to-text</a>
+        <a href="/summarize-audio"class="nav-link">Summarize Audio</a>
+        <a href="/summarize-yt"class="nav-link">Summarize YouTube Video</a>
+        <a href="/summarize-pdf"class="nav-link">Summarize PDF file</a>
+        </div>
     </div>
 
     <!-- Main content -->
@@ -31,14 +37,14 @@
                 <input type="file" id="pdf" name="pdf" accept=".pdf" required>
                 <br>
                 <input type="text" name="question" id="question" placeholder="Ask a question about the PDF" required>
-                <button type="submit" id="transcribeBtn">Summarize</button>
+                <button type="submit" id="transcribeBtn">Ask away!</button>
             </form>
         
             <!-- Feedback Messages -->
             <div id="feedbackMessage"></div>
 
             <!-- Result Container -->
-            <div id="transcriptionResult"></div>
+            <div id="transcriptionResult"style="display:none;"></div>
             <div id="loadingIndicator"></div>
         </main>
 

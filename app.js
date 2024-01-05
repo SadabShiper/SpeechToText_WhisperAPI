@@ -202,6 +202,7 @@ app.post('/pdf', upload.single('pdf'),async (req, res) => {
         // Invoke the chain with a specific question.
         
         let question = req.body.question;
+
         const answer = await chain.invoke(question);
         
 

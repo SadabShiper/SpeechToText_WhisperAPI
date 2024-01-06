@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Transcription App</title>
+    <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+    <!-- Sidebar -->
+    <div id="sidebar">
+        <div class="sidebar-header">
+            <h1>SummarEase</h1>
+            <p>An AI Synopsis App</p>
+        </div>
+        <div class="sidebar-links">
+        <a href="/" class="nav-link">Speech-to-text</a>
+        <a href="/summarize-audio"class="nav-link">Summarize Audio</a>
+        <!-- <a href="/summarize-yt"class="nav-link">Summarize YouTube Video</a> -->
+        <a href="/summarize-pdf"class="nav-link">Summarize PDF file</a>
+        </div>
+        <a href="/summarize-csv"class="nav-link">Summarize CSV file</a>
+        </div>
+    </div>
+    <div id = "main">
+        <header>
+            <nav>
+                <div class="container">
+                    <h1>Audio Transcription App</h1>
+                </div>
+            </nav>
+        </header>
+
+        <main class="container">
+            <form id="transcriptionForm" action="/summarize-yt" method="post">
+                <label for="audio">Enter the YouTube link:</label>
+                <input type="text" name="url" id="url" placeholder="Link goes here..." required>
+                <button type="submit" id="summarizeBtn">Summarize</button>
+            </form>
+        
+            <!-- Add this div to your HTML body -->
+            <div id="transcriptionResult"style="display:none;"></div>
+            <div id="loadingIndicator"></div>
+        </main>
+
+        <!-- <footer>
+            <div class="container">
+                <p>&copy; 2024 Audio Transcription App</p>
+            </div>
+        </footer> -->
+    </div>
+    
+</body>
+</html>

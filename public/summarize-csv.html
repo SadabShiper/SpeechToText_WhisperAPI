@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF Summarizer App</title>
+    <title>csv Summarizer App</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -17,7 +17,7 @@
         <a href="/" class="nav-link">Audio-to-Text</a>
         <a href="/summarize-audio"class="nav-link">Summarize Audio</a>
         <!-- <a href="/summarize-yt"class="nav-link">Summarize YouTube Video</a> -->
-        <a href="/summarize-pdf"class="nav-link">Summarize PDF file</a>
+        <a href="/summarize-PDF"class="nav-link">Summarize PDF file</a>
         </div>
         <a href="/summarize-csv"class="nav-link">Summarize CSV file</a>
         </div>
@@ -28,17 +28,17 @@
         <header>
             <nav>
                 <div class="container">
-                    <h1>Summarize PDF File</h1>
+                    <h1>Summarize CSV File</h1>
                 </div>
             </nav>
         </header>
 
         <main class="container">
-            <form id="transcriptionForm" action="/pdf" method="post" enctype="multipart/form-data">
-                <label for="pdf">Select a PDF file:</label>
-                <input type="file" id="pdf" name="pdf" accept=".pdf" required>
+            <form id="transcriptionForm" action="/summarize-csv" method="post" enctype="multipart/form-data">
+                <label for="csv">Select a CSV file:</label>
+                <input type="file" id="csv" name="csv" accept=".csv" required>
                 <br>
-                <input type="text" name="question" id="question" placeholder="Ask a question about the PDF" required>
+                <input type="text" name="question" id="question" placeholder="Ask a question about the CSV" required>
                 <button type="submit" id="transcribeBtn">Ask away!</button>
             </form>
         
@@ -52,7 +52,7 @@
 
         <!-- <footer>
             <div class="container">
-                <p>&copy; 2024 PDF Summarizer App</p>
+                <p>&copy; 2024 csv Summarizer App</p>
             </div>
         </footer> -->
     </div>
@@ -95,11 +95,11 @@
         document.getElementById('question').value = '';
 
         // Provide feedback message
-        // document.getElementById('feedbackMessage').innerHTML = '<p>PDF Summarized successfully!</p>';
+        // document.getElementById('feedbackMessage').innerHTML = '<p>csv Summarized successfully!</p>';
     } else {
         // Handle the case where data.answer is undefined
         console.error('Error: The server response did not contain a valid answer.');
-        document.getElementById('feedbackMessage').innerHTML = '<p>An error occurred during PDF summarization. Please try again.</p>';
+        document.getElementById('feedbackMessage').innerHTML = '<p>An error occurred during csv summarization. Please try again.</p>';
         // Show result container
         document.getElementById('transcriptionResult').style.display = 'block';
     }

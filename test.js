@@ -1,17 +1,9 @@
-const OpenAI = require("openai")
+const youtubeUrl = "https://www.youtube.com/watch?v=XXYlFuWEuKI&list=RDQMgEzdN5RuCXE&start_radio=1";
 
-const openai = new OpenAI();
+// Create a URL object
+const url = new URL(youtubeUrl);
 
-async function main() {
-  const completion = await openai.chat.completions.create({
-    messages: [{"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": "Who won the world series in 2020?"},
-    ],
-    model: "gpt-3.5-turbo",
-  });
+// Get the video ID from the 'v' parameter
+const videoId = url.searchParams.get("v");
 
-  const assistantResponse = completion.choices[0].message.content;
-  console.log(assistantResponse);
-}
-
-main();
+console.log(videoId);

@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
+const RapidAPI = require('rapidapi-connect');
 
 const { PDFLoader } = require("langchain/document_loaders/fs/pdf");
 
@@ -16,8 +17,6 @@ const { OpenAIEmbeddings } = require("langchain/embeddings/openai");
 const { ChatOpenAI } = require("langchain/chat_models/openai");
 
 const { FaissStore } = require("langchain/vectorstores/faiss");
-
-const readline = require("readline");
 
 const {
     RunnablePassthrough,
@@ -40,7 +39,8 @@ const openai = new OpenAI({
 
 const app = express();
 const port = process.env.PORT || 3000;
-
+const bodyParser = require('body-parser');
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
 const storage = multer.memoryStorage();
@@ -57,6 +57,15 @@ app.get('/summarize-audio', (req, res) => {
 app.get('/summarize-pdf', (req, res) => {
     res.sendFile(__dirname + '/public/summarize-pdf.html');
 });
+
+app.get('/summarize-yt', (req, res) => {
+    res.sendFile(__dirname + '/public/summarize-yt.html');
+});
+
+app.get('/summarize-csv', (req, res) => {
+    res.sendFile(__dirname + '/public/summarize-csv.html');
+});
+
 
 // Endpoint for transcribing audio
 app.post('/transcribe', upload.single('audio'), async (req, res) => {
@@ -217,6 +226,150 @@ app.post('/pdf', upload.single('pdf'),async (req, res) => {
         }
 });
 
+app.post('/summarize-csv', upload.single('csv'),async (req, res) => {
+    try {
+        const model = new ChatOpenAI({
+            modelName: "gpt-3.5-turbo"
+        })
+        if (!req.file) {
+            return res.status(400).send('No CSV file uploaded.');
+        }
+        
+        const csvFilePath = path.join(__dirname, 'uploads', req.file.originalname);
+        fs.writeFileSync(csvFilePath, req.file.buffer);
+
+        // Step-1 Load PDF
+
+        // provide the pdf file path here
+        const loader = new CSVLoader(csvFilePath);
+        // const loader = new PDFLoader(pdfFilePath);
+        const docs = await loader.load();
+        
+        // Step-2 Split the pdf into chunks
+
+        //splitter function
+        const splitter = new RecursiveCharacterTextSplitter({
+            chunkSize: 1000,
+            chunkOverlap: 200,
+        });
+
+        // created chunks from pdf
+        const splittedDocs = await splitter.splitDocuments(docs);
+        // we will use OpenAI's embedding models
+        const embeddings = new OpenAIEmbeddings({
+            openAIApiKey: process.env.OPENAI_API_KEY// In Node.js defaults to process.env.OPENAI_API_KEY
+            // batchSize: 512, // Default value if omitted is 512. Max is 2048
+        });
+        // Create a vector store from the documents.
+        const vectorStore = await FaissStore.fromDocuments(
+            splittedDocs,
+            embeddings
+        );
+
+        // Initialize a retriever wrapper around the vector store.
+        const vectorStoreRetriever = vectorStore.asRetriever();
+
+        // Create a system & human prompt for the chat model.
+        const SYSTEM_TEMPLATE = `Use the following pieces of context to answer the question at the end.
+    If you don't know the answer, just say that you don't know, don't try to make up an answer.
+    ----------------
+    {context}`;
+        const messages = [
+            SystemMessagePromptTemplate.fromTemplate(SYSTEM_TEMPLATE),
+            HumanMessagePromptTemplate.fromTemplate("{question}"),
+        ];
+        const prompt = ChatPromptTemplate.fromMessages(messages);
+
+        // Construct the runnable chain.
+        const chain = RunnableSequence.from([
+            {
+                context: vectorStoreRetriever.pipe(formatDocumentsAsString),
+                question: new RunnablePassthrough(),
+            },
+            prompt,
+            model,
+            new StringOutputParser(),
+        ]);
+
+        // Invoke the chain with a specific question.
+        
+        let question = req.body.question;
+
+        const answer = await chain.invoke(question);
+        
+
+        // console.log(answerText);
+
+        fs.unlinkSync(csvFilePath);
+        res.json({ answer });
+
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('Internal Server Error');
+        }
+});
+
+const rapid = new RapidAPI(process.env.RAPIDAPI_API_KEY);
+
+app.post('/summarize-yt', async (req, res) => {
+    try {
+        const youtubeUrl = req.body.url;
+
+        // Validate the YouTube URL
+        if (!isValidYouTubeUrl(youtubeUrl)) {
+            return res.status(400).send('Invalid YouTube URL.');
+        }
+
+        // Create a URL object
+        const url = new URL(youtubeUrl);
+
+        // Get the video ID from the 'v' parameter
+        const videoId = url.searchParams.get("v");
+
+        console.log(videoId);
+
+        // Make a request using the RapidAPI SDK
+        const response = await rapid.call('YouTubeToMp3', 'dl', {
+            'id': videoId,
+        });
+
+        // Handle the 'on' event to download the MP3 file
+        response.on('on', (data) => {
+            // Assuming 'data' contains the MP3 file content
+            // You may need to adjust this based on the actual API response
+            const fileName = `downloaded_${videoId}.mp3`;
+
+            // Save the file to your server
+            // Note: Ensure you have appropriate error handling here
+            fs.writeFileSync(fileName, data);
+
+            // Provide the file for download or send a success response
+            res.download(fileName, (err) => {
+                if (err) {
+                    console.error('Download error:', err);
+                    res.status(500).send('Internal Server Error');
+                } else {
+                    // Clean up: remove the temporary file
+                    fs.unlinkSync(fileName);
+                }
+            });
+        });
+
+        // Continue with the rest of your code...
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+
+// Helper function to validate YouTube URL
+function isValidYouTubeUrl(url) {
+    // Use a regular expression or other validation method to check if the URL is a valid YouTube URL
+    // For simplicity, here's a basic regex that checks if the URL contains "youtube.com" and "v=" in the query parameters
+    const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?youtube\.com\/.*[?&]v=/;
+    return youtubeRegex.test(url);
+}
 
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);

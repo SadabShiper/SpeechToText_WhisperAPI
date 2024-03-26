@@ -1,6 +1,9 @@
-# SpeechToText_WhisperAPI
-A speech-to-text app using OpenAI's Whisper API
-
+# SummarEase | An AI Synopsis App
+This project includes all of OpenAI API's functionalities, including:
+* Audio-to-Text
+* Summarize Audio
+* Summarize PDF file
+* Summarize CSV file
 ## Steps
 1. Create a .env file and put your OpenAI API key there. (an example is given)
 2. `npm install`
